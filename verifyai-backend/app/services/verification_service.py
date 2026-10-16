@@ -38,6 +38,7 @@ class VerificationService:
     def __init__(self, llm_service: LLMService | None = None, search_service: SearchService | None = None):
         settings = get_settings()
         self._chunk_size = settings.chunk_size_chars
+        self._max_claims_per_request = settings.max_claims_per_request
         self._llm = llm_service or LLMService()
         self._search = search_service or SearchService()
 
@@ -58,7 +59,14 @@ class VerificationService:
                 seen.add(key)
                 deduped.append(claim_text)
 
-        claims = await asyncio.gather(*(self._verify_single_claim(text) for text in deduped))
+        # Each claim can cost several searches and model calls, so cap how many
+        # one request verifies.
+        dropped = len(deduped) - self._max_claims_per_request
+        if dropped > 0:
+            logger.info("Dropping %d claim(s) over the per-request limit of %d", dropped, self._max_claims_per_request)
+            deduped = deduped[: self._max_claims_per_request]
+
+        claims =await asyncio.gather(*(self._verify_single_claim(text) for text in deduped))
 
         return VerificationReport(
             user_id=user_id,

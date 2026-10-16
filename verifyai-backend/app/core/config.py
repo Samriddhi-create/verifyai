@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     max_text_length: int = 50_000
     chunk_size_chars: int = 3000
     max_claims_per_chunk: int = 8
+    max_claims_per_request: int = 6
     max_evidence_per_claim: int = 5
 
     @property

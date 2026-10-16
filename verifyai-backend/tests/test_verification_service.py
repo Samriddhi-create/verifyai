@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.core.errors import UpstreamServiceError
-from app.models.verification import ClaimStatus, EvidenceSnippet
+from app.models.verification import ClaimStatus, EvidenceSnippet, VerifyRequest
 from app.services.verification_service import MAX_ATTEMPTS, VerificationService
 
 CLAIM = "The Eiffel Tower was completed in 1889."
@@ -123,3 +123,20 @@ async def test_first_attempt_failure_propagates():
 
     with pytest.raises(UpstreamServiceError):
         await service._verify_single_claim(CLAIM)
+
+
+@pytest.mark.asyncio
+async def test_verify_caps_claims_per_request():
+    claim_texts = [f"Claim number {n}." for n in range(10)]
+    llm = SimpleNamespace(
+        extract_claims=AsyncMock(return_value=claim_texts),
+        analyze_evidence=AsyncMock(return_value=(ClaimStatus.SUPPORTED, 0.9, "Confirmed.")),
+        rewrite_query=AsyncMock(),
+    )
+    search = SimpleNamespace(search_claim=AsyncMock(return_value=_evidence("result")))
+    service = VerificationService(llm_service=llm, search_service=search)
+
+    report = await service.verify(VerifyRequest(text="Some text with ten claims."), user_id=None)
+
+    assert [claim.claim_text for claim in report.claims] == claim_texts[:6]
+    assert search.search_claim.await_count == 6
