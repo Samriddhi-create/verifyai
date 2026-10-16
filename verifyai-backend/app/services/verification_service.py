@@ -5,12 +5,33 @@ import logging
 from uuid import UUID
 
 from app.core.config import get_settings
-from app.models.verification import Claim, VerificationReport, VerifyRequest
+from app.core.errors import UpstreamServiceError
+from app.models.verification import (
+    AgentAttempt,
+    Claim,
+    ClaimStatus,
+    EvidenceSnippet,
+    VerificationReport,
+    VerifyRequest,
+)
 from app.services.chunking import chunk_text
 from app.services.llm_service import LLMService
 from app.services.search_service import SearchService
 
 logger = logging.getLogger(__name__)
+
+# A claim is retried with a rewritten search query while its result is
+# unverified or less confident than this.
+CONFIDENCE_THRESHOLD = 0.7
+# Total search-and-judge rounds per claim, including the first.
+MAX_ATTEMPTS = 3
+
+
+def _is_better(candidate: Claim, best: Claim) -> bool:
+    """A real verdict beats "unverified"; among equals, higher confidence wins."""
+    candidate_rank = (candidate.status is not ClaimStatus.UNVERIFIED, candidate.confidence_score)
+    best_rank = (best.status is not ClaimStatus.UNVERIFIED, best.confidence_score)
+    return candidate_rank > best_rank
 
 
 class VerificationService:
@@ -46,8 +67,8 @@ class VerificationService:
             claims=list(claims),
         )
 
-    async def _verify_single_claim(self, claim_text: str) -> Claim:
-        evidence = await self._search.search_claim(claim_text)
+    async def _run_attempt(self, claim_text: str, query: str) -> Claim:
+        evidence = await self._search.search_claim(query)
         status, confidence, reasoning = await self._llm.analyze_evidence(claim_text, evidence)
         return Claim(
             claim_text=claim_text,
@@ -56,3 +77,41 @@ class VerificationService:
             confidence_score=confidence,
             reasoning=reasoning,
         )
+
+    async def _verify_single_claim(self, claim_text: str) -> Claim:
+        trace: list[AgentAttempt] = []
+        queries: list[str] = []
+        weak_evidence: list[EvidenceSnippet] = []
+        best: Claim | None = None
+
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            if attempt == 1:
+                # Errors on the first attempt propagate: there is no result to fall back on.
+                query = claim_text
+                result = await self._run_attempt(claim_text, query)
+            else:
+                try:
+                    query = await self._llm.rewrite_query(claim_text, list(queries), list(weak_evidence))
+                    result = await self._run_attempt(claim_text, query)
+                except UpstreamServiceError:
+                    logger.warning("Retry %d failed for claim; keeping best result so far", attempt, exc_info=True)
+                    break
+
+            queries.append(query)
+            weak_evidence.extend(result.evidence)
+            trace.append(
+                AgentAttempt(
+                    attempt=attempt,
+                    query=query,
+                    sources_found=len(result.evidence),
+                    status=result.status,
+                    confidence_score=result.confidence_score,
+                )
+            )
+            if best is None or _is_better(result, best):
+                best = result
+            if result.status is not ClaimStatus.UNVERIFIED and result.confidence_score >= CONFIDENCE_THRESHOLD:
+                break
+
+        assert best is not None
+        return best.model_copy(update={"trace": trace})
