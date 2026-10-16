@@ -1,0 +1,10 @@
+.venv
+.env
+.env.*
+!.env.example
+tests
+.pytest_cache
+__pycache__
+supabase
+pytest.ini
+requirements-dev.txt

@@ -1,0 +1,27 @@
+# Extension
+verifyai-extension/node_modules/
+verifyai-extension/dist/
+verifyai-extension/.env
+verifyai-extension/.env.local
+
+# Web dashboard
+verifyai-frontend/node_modules/
+verifyai-frontend/dist/
+verifyai-frontend/.env
+verifyai-frontend/.env.local
+
+# Backend
+verifyai-backend/.venv/
+verifyai-backend/__pycache__/
+verifyai-backend/**/__pycache__/
+verifyai-backend/.env
+verifyai-backend/*.egg-info/
+verifyai-backend/.pytest_cache/
+
+# OS / editor
+.DS_Store
+.vscode/
+*.log
+
+# TypeScript build cache
+*.tsbuildinfo

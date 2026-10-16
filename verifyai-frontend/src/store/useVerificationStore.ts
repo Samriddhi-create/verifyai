@@ -1,0 +1,84 @@
+import { create } from "zustand";
+import type { ChatMessage, VerificationReport } from "@/types";
+import { ApiError, askFollowUp, verifyText } from "@/lib/api";
+import { getCachedVerification, setCachedVerification } from "@/lib/cache";
+
+interface VerificationState {
+  inputText: string;
+  report: VerificationReport | null;
+  isLoading: boolean;
+  error: string | null;
+  chatMessages: ChatMessage[];
+  isChatLoading: boolean;
+  chatError: string | null;
+  setInputText: (text: string) => void;
+  runVerification: (text: string) => Promise<void>;
+  askFollowUpQuestion: (question: string) => Promise<void>;
+  reset: () => void;
+}
+
+// Incremented whenever a new check starts or the state is reset, so a follow-up
+// answer for an old report can't land in the conversation about a new one.
+let generation = 0;
+
+export const useVerificationStore = create<VerificationState>((set, get) => ({
+  inputText: "",
+  report: null,
+  isLoading: false,
+  error: null,
+  chatMessages: [],
+  isChatLoading: false,
+  chatError: null,
+
+  setInputText: (text) => set({ inputText: text }),
+
+  runVerification: async (text) => {
+    generation += 1;
+    set({ isLoading: true, error: null, chatMessages: [], isChatLoading: false, chatError: null });
+    try {
+      const cached = getCachedVerification(text);
+      if (cached) {
+        set({ report: cached, isLoading: false });
+        return;
+      }
+
+      const report = await verifyText(text);
+      setCachedVerification(text, report);
+      set({ report, isLoading: false });
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Something went wrong while verifying this text.";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  askFollowUpQuestion: async (question) => {
+    const { report, chatMessages, isChatLoading } = get();
+    if (!report || isChatLoading) return;
+
+    const current = generation;
+    const withQuestion: ChatMessage[] = [...chatMessages, { role: "user", content: question }];
+    set({ chatMessages: withQuestion, chatError: null, isChatLoading: true });
+    try {
+      const { answer } = await askFollowUp(report, chatMessages, question);
+      if (current === generation) {
+        set({ chatMessages: [...withQuestion, { role: "assistant", content: answer }], isChatLoading: false });
+      }
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Couldn't get an answer. Try asking again.";
+      if (current === generation) set({ chatError: message, isChatLoading: false });
+    }
+  },
+
+  reset: () => {
+    generation += 1;
+    set({
+      inputText: "",
+      report: null,
+      isLoading: false,
+      error: null,
+      chatMessages: [],
+      isChatLoading: false,
+      chatError: null,
+    });
+  },
+}));
