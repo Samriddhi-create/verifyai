@@ -71,6 +71,16 @@ class EvidenceSnippet(BaseModel):
     published_date: str | None = None
 
 
+class AgentAttempt(BaseModel):
+    """One search-and-judge round the agent performed for a claim."""
+
+    attempt: int
+    query: str
+    sources_found: int
+    status: ClaimStatus
+    confidence_score: float = Field(ge=0.0, le=1.0)
+
+
 class Claim(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     claim_text: str
@@ -78,6 +88,7 @@ class Claim(BaseModel):
     evidence: list[EvidenceSnippet] = Field(default_factory=list)
     confidence_score: float = Field(ge=0.0, le=1.0)
     reasoning: str | None = None
+    trace: list[AgentAttempt] = Field(default_factory=list)
 
 
 class HallucinationAlert(BaseModel):
