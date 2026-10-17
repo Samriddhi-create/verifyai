@@ -56,7 +56,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return (await response.json()) as T;
 }
 
-export function verifyText(text: string, sourceUrl?: string): Promise<VerificationReport> {
+export function verifyText(text: string, sourceUrl?: string, signal?: AbortSignal): Promise<VerificationReport> {
   if (env.mockApi) {
     // A fresh copy, so callers that mutate the report can't change the shared sample.
     return mockResponse(({ sampleReport }) => structuredClone(sampleReport));
@@ -64,6 +64,7 @@ export function verifyText(text: string, sourceUrl?: string): Promise<Verificati
   return request<VerificationReport>("/api/verify", {
     method: "POST",
     body: JSON.stringify({ text, source_url: sourceUrl ?? null }),
+    signal,
   });
 }
 

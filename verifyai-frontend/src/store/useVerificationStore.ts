@@ -14,6 +14,7 @@ interface VerificationState {
   chatError: string | null;
   setInputText: (text: string) => void;
   runVerification: (text: string) => Promise<void>;
+  cancelVerification: () => void;
   askFollowUpQuestion: (question: string) => Promise<void>;
   reset: () => void;
 }
@@ -21,6 +22,8 @@ interface VerificationState {
 // Incremented whenever a new check starts or the state is reset, so a follow-up
 // answer for an old report can't land in the conversation about a new one.
 let generation = 0;
+// Aborts the in-flight check's request when it is cancelled or replaced.
+let verifyController: AbortController | null = null;
 
 export const useVerificationStore = create<VerificationState>((set, get) => ({
   inputText: "",
@@ -35,7 +38,11 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
   runVerification: async (text) => {
     generation += 1;
-    set({ isLoading: true, error: null, chatMessages: [], isChatLoading: false, chatError: null });
+    const current = generation;
+    verifyController?.abort();
+    const controller = new AbortController();
+    verifyController = controller;
+    set({ isLoading: true, report: null, error: null, chatMessages: [], isChatLoading: false, chatError: null });
     try {
       // Mock reports are never read from or written to the cache, so invented
       // sample data can't be served as a real result once mock mode is off.
@@ -45,13 +52,24 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         return;
       }
 
-      const report = await verifyText(text);
+      const report = await verifyText(text, undefined, controller.signal);
+      if (current !== generation) return;
       if (!env.mockApi) setCachedVerification(text, report);
       set({ report, isLoading: false });
     } catch (err) {
+      // A cancelled or replaced check has nothing left to report.
+      if (current !== generation) return;
       const message = err instanceof ApiError ? err.message : "Something went wrong while verifying this text.";
       set({ error: message, isLoading: false });
     }
+  },
+
+  // The page stops waiting, but a request the backend already received still runs there.
+  cancelVerification: () => {
+    generation += 1;
+    verifyController?.abort();
+    verifyController = null;
+    set({ isLoading: false });
   },
 
   askFollowUpQuestion: async (question) => {
@@ -74,6 +92,8 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
   reset: () => {
     generation += 1;
+    verifyController?.abort();
+    verifyController = null;
     set({
       inputText: "",
       report: null,
