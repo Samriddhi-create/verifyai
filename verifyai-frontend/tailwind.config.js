@@ -1,59 +1,62 @@
 /** @type {import('tailwindcss').Config} */
+
+// Each status gets a solid fill (DEFAULT), a text color that passes contrast
+// in both themes (ink) and a soft tint for badges and highlights (soft).
+const status = (name) => ({
+  DEFAULT: `var(--${name})`,
+  ink: `var(--${name}-ink)`,
+  soft: `var(--${name}-soft)`,
+});
+
 export default {
-  darkMode: ["class"],
+  // The theme is switched with the "light" class (see src/lib/theme.ts); dark is the default.
+  darkMode: ["class", ":root:not(.light)"],
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        supported: {
-          DEFAULT: "hsl(var(--supported))",
-          foreground: "hsl(var(--supported-foreground))",
-        },
-        partial: {
-          DEFAULT: "hsl(var(--partial))",
-          foreground: "hsl(var(--partial-foreground))",
-        },
-        contradicted: {
-          DEFAULT: "hsl(var(--contradicted))",
-          foreground: "hsl(var(--contradicted-foreground))",
-        },
-        unverified: {
-          DEFAULT: "hsl(var(--unverified))",
-          foreground: "hsl(var(--unverified-foreground))",
-        },
+        // Design tokens.
+        bg: "var(--bg)",
+        surface: { DEFAULT: "var(--surface)", 2: "var(--surface-2)" },
+        line: { DEFAULT: "var(--line)", strong: "var(--line-strong)" },
+        ink: "var(--ink)",
+        violet: { DEFAULT: "var(--violet)", on: "var(--on-violet)", soft: "var(--glow-soft)" },
+        supported: status("supported"),
+        partial: status("partial"),
+        contradicted: status("contradicted"),
+        unverified: status("unverified"),
+        severity: { high: "var(--severity-high)", medium: "var(--severity-medium)", on: "var(--on-severity)" },
+
+        // Older names, mapped onto the tokens so existing pages follow the theme.
+        border: "var(--line)",
+        input: "var(--line-strong)",
+        ring: "var(--violet)",
+        background: "var(--bg)",
+        foreground: "var(--ink)",
+        primary: { DEFAULT: "var(--violet)", foreground: "var(--on-violet)" },
+        secondary: { DEFAULT: "var(--surface-2)", foreground: "var(--ink)" },
+        muted: { DEFAULT: "var(--surface-2)", foreground: "var(--muted)" },
+        accent: { DEFAULT: "var(--surface-2)", foreground: "var(--ink)" },
+        card: { DEFAULT: "var(--surface)", foreground: "var(--ink)" },
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "var(--radius)",
+        sm: "var(--radius-sm)",
+        tile: "var(--radius-tile)",
+      },
+      boxShadow: {
+        // Glow is only for the score ring, the search trail and primary buttons.
+        "glow-ring": "0 0 48px 8px var(--glow)",
+        "glow-button": "0 0 24px var(--glow-soft)",
+        "glow-mark": "0 0 16px var(--glow)",
+        "glow-line": "0 0 10px var(--glow)",
+        "glow-node": "0 0 0 5px var(--glow-soft), 0 0 22px var(--glow)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-display)"],
+        sans: ["var(--font-body)"],
+        mono: ["var(--font-mono)"],
       },
     },
   },

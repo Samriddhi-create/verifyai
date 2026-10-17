@@ -1,69 +1,115 @@
+@import "@fontsource-variable/bricolage-grotesque/opsz.css";
+@import "@fontsource-variable/figtree/index.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* VerifyAI design tokens (VERIFYAI_DESIGN.md). Dark is the default; the
+   "light" class on <html> switches to the light theme. */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 12%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 6% 10%;
-    --radius: 10px;
+    --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+    --font-body: "Figtree Variable", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-    --supported: 142 71% 45%;
-    --supported-foreground: 0 0% 100%;
-    --partial: 41 96% 48%;
-    --partial-foreground: 0 0% 100%;
-    --contradicted: 0 84% 60%;
-    --contradicted-foreground: 0 0% 100%;
-    --unverified: 240 4% 56%;
-    --unverified-foreground: 0 0% 100%;
+    --bg: #0e0b1a;
+    --surface: #171329;
+    --surface-2: #1f1a36;
+    --line: #2a2442;
+    --line-strong: #3d3560;
+    --ink: #f3f1fb;
+    --muted: #a9a4c2;
+
+    /* Brand: only the brand mark, primary buttons, score ring, search trail and soft glow. */
+    --violet: #9b82ff;
+    --on-violet: #0e0b1a;
+    --glow: rgba(155, 130, 255, 0.38);
+    --glow-soft: rgba(155, 130, 255, 0.16);
+
+    /* Status: only for status. */
+    --supported: #3ddc97;
+    --partial: #f5b83d;
+    --contradicted: #ff6b7a;
+    --unverified: #9a96ab;
+    --supported-ink: #3ddc97;
+    --partial-ink: #f5b83d;
+    --contradicted-ink: #ff8a96;
+    --unverified-ink: #b9b5ca;
+    --supported-soft: rgba(61, 220, 151, 0.13);
+    --partial-soft: rgba(245, 184, 61, 0.13);
+    --contradicted-soft: rgba(255, 107, 122, 0.14);
+    --unverified-soft: rgba(154, 150, 171, 0.16);
+    /* Severity tags: solid fill with dark text in both themes. */
+    --severity-high: var(--contradicted);
+    --severity-medium: var(--unverified);
+    --on-severity: #0e0b1a;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-tile: 8px;
+
+    color-scheme: dark;
   }
 
-  .dark {
-    --background: 240 10% 8%;
-    --foreground: 0 0% 96%;
-    --card: 240 8% 12%;
-    --card-foreground: 0 0% 96%;
-    --primary: 0 0% 96%;
-    --primary-foreground: 240 6% 10%;
-    --secondary: 240 6% 16%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 240 6% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 240 6% 18%;
-    --accent-foreground: 0 0% 96%;
-    --border: 240 6% 20%;
-    --input: 240 6% 20%;
-    --ring: 240 5% 65%;
+  .light {
+    --bg: #f6f5fb;
+    --surface: #ffffff;
+    --surface-2: #f1eff8;
+    --line: #e3dff0;
+    --line-strong: #cec7e6;
+    --ink: #16122a;
+    --muted: #5d5777;
+    --violet: #7a5cf5;
+    --on-violet: #ffffff;
+    --glow: rgba(122, 92, 245, 0.28);
+    --glow-soft: rgba(122, 92, 245, 0.1);
+    --supported-ink: #0b7a4e;
+    --partial-ink: #8f5a00;
+    --contradicted-ink: #c42a3d;
+    --unverified-ink: #5f5b72;
+    --supported-soft: rgba(61, 220, 151, 0.16);
+    --partial-soft: rgba(245, 184, 61, 0.2);
+    --contradicted-soft: rgba(255, 107, 122, 0.15);
+    --unverified-soft: rgba(154, 150, 171, 0.2);
 
-    --supported: 142 65% 42%;
-    --supported-foreground: 0 0% 100%;
-    --partial: 41 90% 50%;
-    --partial-foreground: 240 10% 8%;
-    --contradicted: 0 74% 55%;
-    --contradicted-foreground: 0 0% 100%;
-    --unverified: 240 5% 55%;
-    --unverified-foreground: 0 0% 100%;
+    color-scheme: light;
   }
 
   * {
-    @apply border-border;
+    @apply border-line;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-bg font-sans text-ink antialiased;
+    font-size: 15px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .spin-slow {
+    animation: spin 1.1s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spin-slow,
+    .animate-spin {
+      animation: none;
+    }
   }
 }
 
@@ -72,7 +118,8 @@
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
+  background: var(--line-strong);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
