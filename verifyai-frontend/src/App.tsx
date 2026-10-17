@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ROUTES } from "@/lib/routes";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
 import { HistoryPage } from "@/pages/HistoryPage";
+import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { PrivacyPage } from "@/pages/PrivacyPage";
 import { SettingsPage } from "@/pages/SettingsPage";
@@ -12,7 +13,7 @@ import { VerifyPage } from "@/pages/VerifyPage";
 export function App() {
   return (
     <Routes>
-      <Route path={ROUTES.landing} element={<Navigate to={ROUTES.verify} replace />} />
+      <Route path={ROUTES.landing} element={<LandingPage />} />
       <Route path={ROUTES.login} element={<LoginPage />} />
       <Route path={ROUTES.authCallback} element={<AuthCallbackPage />} />
       <Route path={ROUTES.privacy} element={<PrivacyPage />} />
