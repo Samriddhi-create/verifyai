@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { ChatMessage, VerificationReport } from "@/types";
 import { ApiError, askFollowUp, verifyText } from "@/lib/api";
 import { getCachedVerification, setCachedVerification } from "@/lib/cache";
+import { env } from "@/lib/env";
 
 interface VerificationState {
   inputText: string;
@@ -36,14 +37,16 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
     generation += 1;
     set({ isLoading: true, error: null, chatMessages: [], isChatLoading: false, chatError: null });
     try {
-      const cached = getCachedVerification(text);
+      // Mock reports are never read from or written to the cache, so invented
+      // sample data can't be served as a real result once mock mode is off.
+      const cached = env.mockApi ? null : getCachedVerification(text);
       if (cached) {
         set({ report: cached, isLoading: false });
         return;
       }
 
       const report = await verifyText(text);
-      setCachedVerification(text, report);
+      if (!env.mockApi) setCachedVerification(text, report);
       set({ report, isLoading: false });
     } catch (err) {
       const message = err instanceof ApiError ? err.message : "Something went wrong while verifying this text.";
