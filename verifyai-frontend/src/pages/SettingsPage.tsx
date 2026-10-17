@@ -25,31 +25,31 @@ export function SettingsPage() {
   const { preference, setTheme } = useTheme();
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your account and preferences.</p>
-      </div>
+    <div className="mx-auto flex max-w-[860px] flex-col gap-6 sm:pt-7">
+      <header className="flex flex-col gap-2.5">
+        <h1 className="font-display text-[32px] font-bold leading-[1.1] tracking-[-0.02em] sm:text-[40px]">Settings</h1>
+        <p className="m-0 text-[17px] text-muted-foreground">Manage your account and how VerifyAI looks.</p>
+      </header>
 
       <Card>
         <CardHeader>
           <CardTitle>Account</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-between">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
           {user ? (
             <>
               <div>
-                <p className="text-sm font-medium">{user.email}</p>
-                <p className="text-xs text-muted-foreground">Signed in via {formatProviders(user.app_metadata)}</p>
+                <p className="text-[15px] font-semibold">{user.email}</p>
+                <p className="text-sm text-muted-foreground">Signed in via {formatProviders(user.app_metadata)}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => void signOut()}>
+              <Button variant="outline" onClick={() => void signOut()}>
                 Sign out
               </Button>
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">Not signed in. Sign in to save your history.</p>
-              <Button asChild variant="outline" size="sm">
+              <p className="text-[15px] text-muted-foreground">Sign in to keep your checks in History.</p>
+              <Button asChild variant="outline">
                 <Link to={ROUTES.login}>Sign in</Link>
               </Button>
             </>
@@ -59,9 +59,9 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Appearance</CardTitle>
+          <CardTitle>Theme</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2">
+        <CardContent className="flex flex-wrap gap-2" role="group" aria-label="Theme">
           {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
@@ -69,8 +69,8 @@ export function SettingsPage() {
               onClick={() => setTheme(value)}
               aria-pressed={preference === value}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1.5 rounded-md border border-input p-3 text-xs font-medium transition-colors",
-                preference === value ? "border-primary bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-accent"
+                "flex min-h-11 min-w-[96px] flex-1 flex-col items-center gap-1.5 rounded-lg border p-3 text-sm font-semibold transition-colors",
+                preference === value ? "border-line-strong bg-surface-2 text-ink" : "border-line text-muted-foreground hover:text-ink"
               )}
             >
               <Icon className="h-4 w-4" aria-hidden="true" />

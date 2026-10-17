@@ -28,8 +28,8 @@ export function AuthCallbackPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-4">
-      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-      <p className="text-sm text-muted-foreground">Signing you in…</p>
+      <Loader2 className="h-6 w-6 animate-spin text-violet" aria-hidden="true" />
+      <p className="text-[15px] text-muted-foreground" role="status">Signing you in…</p>
     </div>
   );
 }

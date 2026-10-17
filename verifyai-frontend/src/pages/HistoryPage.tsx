@@ -2,20 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyHistoryState, ErrorState } from "@/components/StateViews";
 import { useHistory } from "@/hooks/useHistory";
-import type { ClaimStatus, VerificationSummary } from "@/types";
+import { STATUS_META, STATUS_ORDER } from "@/lib/status";
+import type { VerificationSummary } from "@/types";
 
-const STATUS_COLOR: Record<ClaimStatus, string> = {
-  supported: "bg-supported",
-  partial: "bg-partial",
-  contradicted: "bg-contradicted",
-  unverified: "bg-unverified",
-};
-const STATUS_LABEL: Record<ClaimStatus, string> = {
-  supported: "Supported",
-  partial: "Partial",
-  contradicted: "Contradicted",
-  unverified: "Unverified",
-};
 
 function HistoryItem({ item }: { item: VerificationSummary }) {
   const date = new Date(item.created_at).toLocaleString(undefined, {
@@ -28,20 +17,18 @@ function HistoryItem({ item }: { item: VerificationSummary }) {
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <p className="line-clamp-3 text-sm">{item.original_text}</p>
+      <CardContent className="p-5">
+        <p className="line-clamp-3 text-[15px] leading-relaxed">{item.original_text}</p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {(Object.keys(item.summary) as ClaimStatus[])
-              .filter((status) => item.summary[status] > 0)
-              .map((status) => (
-                <span key={status} className="inline-flex items-center gap-1">
-                  <span className={`h-1.5 w-1.5 rounded-full ${STATUS_COLOR[status]}`} />
-                  {STATUS_LABEL[status]} ({item.summary[status]})
-                </span>
-              ))}
+          <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-muted-foreground">
+            {STATUS_ORDER.filter((status) => (item.summary[status] ?? 0) > 0).map((status) => (
+              <span key={status} className="inline-flex items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${STATUS_META[status].fill}`} aria-hidden="true" />
+                {STATUS_META[status].label} <b className="font-mono font-medium text-ink">{item.summary[status]}</b>
+              </span>
+            ))}
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             {item.claim_count} claim{item.claim_count === 1 ? "" : "s"} · {date}
           </span>
         </div>
@@ -54,13 +41,13 @@ export function HistoryPage() {
   const { items, total, isLoading, error, refresh } = useHistory(true);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div>
-        <h1 className="text-xl font-bold">History</h1>
-        <p className="text-sm text-muted-foreground">
-          {total > 0 ? `${total} verification${total === 1 ? "" : "s"}` : "Your past verifications"}
+    <div className="mx-auto flex max-w-[860px] flex-col gap-6 sm:pt-7">
+      <header className="flex flex-col gap-2.5">
+        <h1 className="font-display text-[32px] font-bold leading-[1.1] tracking-[-0.02em] sm:text-[40px]">History</h1>
+        <p className="m-0 text-[17px] text-muted-foreground">
+          {total > 0 ? `${total} check${total === 1 ? "" : "s"}` : "Your past checks"}
         </p>
-      </div>
+      </header>
 
       {isLoading && (
         <div className="flex flex-col gap-3">
