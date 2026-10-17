@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { ROUTES } from "@/lib/routes";
 
 export function ProtectedRoute() {
   const { user, isLoading } = useAuth();
@@ -14,7 +15,7 @@ export function ProtectedRoute() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.login} replace />;
   }
 
   return <Outlet />;

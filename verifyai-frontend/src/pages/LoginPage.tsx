@@ -3,12 +3,13 @@ import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { ROUTES } from "@/lib/routes";
 
 export function LoginPage() {
   const { user, isLoading, signIn } = useAuth();
 
   if (!isLoading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.verify} replace />;
   }
 
   return (
@@ -28,10 +29,10 @@ export function LoginPage() {
             <Github className="h-4 w-4" aria-hidden="true" />
             Continue with GitHub
           </Button>
-          <Link to="/" className="mt-2 text-center text-xs text-muted-foreground underline">
+          <Link to={ROUTES.verify} className="mt-2 text-center text-xs text-muted-foreground underline">
             Continue without signing in
           </Link>
-          <Link to="/privacy" className="text-center text-xs text-muted-foreground underline">
+          <Link to={ROUTES.privacy} className="text-center text-xs text-muted-foreground underline">
             Privacy policy
           </Link>
         </CardContent>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme, type ThemePreference } from "@/hooks/useTheme";
 import { cn } from "@/lib/cn";
+import { ROUTES } from "@/lib/routes";
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "Light", icon: Sun },
@@ -49,7 +50,7 @@ export function SettingsPage() {
             <>
               <p className="text-sm text-muted-foreground">Not signed in. Sign in to save your history.</p>
               <Button asChild variant="outline" size="sm">
-                <Link to="/login">Sign in</Link>
+                <Link to={ROUTES.login}>Sign in</Link>
               </Button>
             </>
           )}

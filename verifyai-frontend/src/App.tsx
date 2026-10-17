@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Layout } from "@/components/Layout";
+import { AppShell } from "@/components/AppShell";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ROUTES } from "@/lib/routes";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -11,19 +12,23 @@ import { VerifyPage } from "@/pages/VerifyPage";
 export function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path={ROUTES.landing} element={<Navigate to={ROUTES.verify} replace />} />
+      <Route path={ROUTES.login} element={<LoginPage />} />
+      <Route path={ROUTES.authCallback} element={<AuthCallbackPage />} />
+      <Route path={ROUTES.privacy} element={<PrivacyPage />} />
 
-      <Route element={<Layout />}>
-        <Route path="/" element={<VerifyPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+      <Route element={<AppShell />}>
+        <Route path={ROUTES.verify} element={<VerifyPage />} />
+        <Route path={ROUTES.settings} element={<SettingsPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/history" element={<HistoryPage />} />
+          <Route path={ROUTES.history} element={<HistoryPage />} />
         </Route>
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Paths from before the app moved under /app. */}
+      <Route path="/history" element={<Navigate to={ROUTES.history} replace />} />
+      <Route path="/settings" element={<Navigate to={ROUTES.settings} replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.landing} replace />} />
     </Routes>
   );
 }

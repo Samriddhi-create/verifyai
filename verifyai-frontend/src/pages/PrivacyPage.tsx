@@ -1,6 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 export function PrivacyPage() {
   return (
@@ -19,7 +20,7 @@ export function PrivacyPage() {
           <p>
             Text you check is sent to Groq and Tavily to do the fact-check. We never sell your data or use it for ads.
           </p>
-          <Link to="/" className="text-primary underline">
+          <Link to={ROUTES.landing} className="text-primary underline">
             Back to VerifyAI
           </Link>
         </CardContent>
