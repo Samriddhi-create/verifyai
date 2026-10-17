@@ -12,6 +12,18 @@ export class ApiError extends Error {
   }
 }
 
+const MOCK_DELAY_MS = 1200;
+
+// Mock mode never touches the network or Supabase. The sample is imported
+// lazily so it ships as its own chunk instead of in the main bundle.
+async function mockResponse<T>(build: (mocks: typeof import("@/mocks/sampleReport")) => T): Promise<T> {
+  const [mocks] = await Promise.all([
+    import("@/mocks/sampleReport"),
+    new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS)),
+  ]);
+  return build(mocks);
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const {
     data: { session },
@@ -45,6 +57,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export function verifyText(text: string, sourceUrl?: string): Promise<VerificationReport> {
+  if (env.mockApi) {
+    // A fresh copy, so callers that mutate the report can't change the shared sample.
+    return mockResponse(({ sampleReport }) => structuredClone(sampleReport));
+  }
   return request<VerificationReport>("/api/verify", {
     method: "POST",
     body: JSON.stringify({ text, source_url: sourceUrl ?? null }),
@@ -56,6 +72,9 @@ export function askFollowUp(
   history: ChatMessage[],
   question: string
 ): Promise<{ answer: string }> {
+  if (env.mockApi) {
+    return mockResponse(({ sampleFollowUpAnswer }) => ({ answer: sampleFollowUpAnswer }));
+  }
   return request<{ answer: string }>("/api/chat", {
     method: "POST",
     body: JSON.stringify({ original_text: report.original_text, claims: report.claims, history, question }),
@@ -63,5 +82,8 @@ export function askFollowUp(
 }
 
 export function getHistory(limit = 50, offset = 0): Promise<HistoryResponse> {
+  if (env.mockApi) {
+    return mockResponse(() => ({ items: [], total: 0 }));
+  }
   return request<HistoryResponse>(`/api/history?limit=${limit}&offset=${offset}`);
 }

@@ -2,6 +2,7 @@ import { History, LogIn, LogOut, Settings, ShieldCheck, Sparkles } from "lucide-
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
+import { env } from "@/lib/env";
 
 const NAV_ITEMS = [
   { to: "/", label: "Verify", icon: Sparkles, end: true },
@@ -18,6 +19,14 @@ export function Layout() {
         <div className="mb-6 flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
           <span className="text-sm font-bold">VerifyAI</span>
+          {env.mockApi && (
+            <span
+              className="rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+              title="VITE_MOCK_API is on: results are invented sample data, not real verifications."
+            >
+              Demo data
+            </span>
+          )}
         </div>
 
         <nav className="flex flex-col gap-1">
