@@ -1,14 +1,15 @@
-import { CircleAlert, CircleX, Gauge, Github, Link2, Menu, MessageCircleQuestion, Puzzle, ShieldCheck, Sparkles, X, type LucideIcon } from "lucide-react";
+import { CircleAlert, Gauge, Github, Link2, Menu, MessageCircleQuestion, Puzzle, ShieldCheck, Sparkles, X, type LucideIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { ScoreRing } from "@/components/report/ScoreRing";
 import { SearchTrail } from "@/components/report/SearchTrail";
+import { VerdictBanner } from "@/components/report/VerdictBanner";
 import { AgentSteps } from "@/components/StateViews";
 import { Button } from "@/components/ui/button";
 import { EXAMPLE_RESULT } from "@/landing/exampleResult";
 import { GITHUB_URL, ROUTES } from "@/lib/routes";
-import { percent, verdictLine } from "@/lib/status";
+import { verdictLine } from "@/lib/status";
 import type { AgentAttempt } from "@/types";
 
 const SECTION_LINKS = [
@@ -54,15 +55,17 @@ const STACK = [
 ];
 
 // The trail component takes API-shaped attempts. Unverified attempts never
-// display their confidence, so the 0 used for a missing value is not shown.
-const EXAMPLE_TRACE: AgentAttempt[] = EXAMPLE_RESULT.attempts.map((attempt) => ({
+// display their confidence, so a 0 used for a missing value would not be shown.
+const { trail } = EXAMPLE_RESULT;
+const EXAMPLE_TRACE: AgentAttempt[] = trail.attempts.map((attempt) => ({
   attempt: attempt.attempt,
   query: attempt.query,
   sources_found: attempt.sourcesFound,
   status: attempt.status,
   confidence_score: attempt.confidence ?? 0,
 }));
-const KEPT = EXAMPLE_RESULT.attempts.find((attempt) => attempt.attempt === EXAMPLE_RESULT.keptAttempt)!;
+const KEPT = trail.attempts.find((attempt) => attempt.attempt === trail.keptAttempt)!;
+const SEVERITY_LABEL = { high: "High", medium: "Medium" } as const;
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return <p className="m-0 text-[15px] font-semibold text-muted-foreground">{children}</p>;
@@ -152,22 +155,17 @@ function ExampleCard() {
     <figure className="m-0 mt-5 flex w-full max-w-[860px] flex-col items-center gap-5 rounded-lg border border-line-strong bg-surface px-4 pb-4 pt-6 text-left md:mt-10 md:flex-row md:flex-wrap md:gap-12 md:p-8">
       <ScoreRing score={EXAMPLE_RESULT.trustScore} />
       <div className="flex w-full min-w-0 flex-[1_1_360px] flex-col gap-3.5">
-        <div className="flex items-center gap-2.5 text-contradicted-ink">
-          <CircleX className="h-6 w-6" aria-hidden="true" />
-          <strong className="font-display text-[28px] font-bold">Unreliable</strong>
-        </div>
-        <div className="flex flex-col gap-2.5 rounded-lg border border-contradicted bg-contradicted-soft px-4 py-3.5">
+        <VerdictBanner verdict={EXAMPLE_RESULT.verdict} />
+        <div className="flex flex-col gap-2.5 rounded-lg border border-line bg-bg px-4 py-3.5">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[15px] font-bold">Possible hallucination</span>
             <span className="inline-flex h-[26px] items-center rounded-sm bg-severity-high px-2.5 text-sm font-bold text-severity-on">
               <span className="sr-only">Severity: </span>
-              {EXAMPLE_RESULT.hallucination.severity}
+              {SEVERITY_LABEL[EXAMPLE_RESULT.alert.severity]}
             </span>
           </div>
-          <p className="m-0 text-base font-semibold leading-snug md:text-[17px]">{EXAMPLE_RESULT.claim}</p>
-          <p className="m-0 text-[15px] text-muted-foreground">
-            Contradicted by sources at {percent(EXAMPLE_RESULT.hallucination.confidence)}% confidence.
-          </p>
+          <p className="m-0 text-base font-semibold leading-snug md:text-[17px]">{EXAMPLE_RESULT.alert.claim}</p>
+          <p className="m-0 text-[15px] text-muted-foreground">{EXAMPLE_RESULT.alert.message}</p>
         </div>
       </div>
       <figcaption className="w-full basis-full text-center text-sm text-muted-foreground md:text-left">{EXAMPLE_RESULT.label}</figcaption>
@@ -224,12 +222,12 @@ export function LandingPage() {
             <div className="flex flex-col gap-[22px] rounded-lg border border-line bg-surface p-4 md:p-7">
               <div className="flex flex-col gap-1.5">
                 <Eyebrow>{EXAMPLE_RESULT.label}</Eyebrow>
-                <h3 className="m-0 text-lg font-semibold leading-snug md:text-xl">“{EXAMPLE_RESULT.claim}”</h3>
+                <h3 className="m-0 text-lg font-semibold leading-snug md:text-xl">“{trail.claim}”</h3>
               </div>
               <SearchTrail
                 trace={EXAMPLE_TRACE}
-                keptAttempt={EXAMPLE_RESULT.keptAttempt}
-                verdict={verdictLine(KEPT.status, KEPT.confidence ?? 0, EXAMPLE_RESULT.keptAttempt)}
+                keptAttempt={trail.keptAttempt}
+                verdict={verdictLine(KEPT.status, KEPT.confidence ?? 0, trail.keptAttempt)}
               />
             </div>
           </div>
