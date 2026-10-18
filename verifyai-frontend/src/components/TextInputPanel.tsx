@@ -9,7 +9,12 @@ const MAX_LENGTH = 50_000;
 const EXAMPLES = [
   { label: "The Eiffel Tower is in Paris.", text: "The Eiffel Tower is in Paris." },
   { label: "The Great Wall is visible from space", text: "The Great Wall of China is visible from space with the naked eye." },
-  { label: "Tuvalu football in 1987", text: "The Tuvalu national football team won exactly three international matches in 1987." },
+  {
+    label: "Mixed text (3 claims)",
+    text:
+      "The Eiffel Tower was completed in 1889. The Great Wall of China is visible from space with the naked eye. " +
+      "The Australian Institute of Marine Science reported record-high coral cover in the northern Great Barrier Reef in 2022.",
+  },
 ];
 
 const canReadClipboard = typeof navigator !== "undefined" && typeof navigator.clipboard?.readText === "function";
