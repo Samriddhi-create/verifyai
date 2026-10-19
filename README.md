@@ -154,3 +154,9 @@ cd verifyai-extension && npm run type-check && npm run lint
 # Web dashboard
 cd verifyai-frontend && npm run type-check && npm run lint
 ```
+
+## Team
+Team KS: Karambir Singh and Samriddhi.
+Live app: https://verifyai-app-alpha.vercel.app
+## AI assistance
+Built with help from Claude for design and coding. The team decided what to build and checked the results.
